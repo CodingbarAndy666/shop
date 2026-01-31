@@ -64,10 +64,7 @@ const BirthdayInput: React.FC<{
   };
 
   return (
-    <div 
-      className={`relative cursor-pointer w-full`} 
-      onClick={handleContainerClick}
-    >
+    <div className={`relative cursor-pointer w-full`} onClick={handleContainerClick}>
       <input 
         ref={inputRef}
         type="date"
@@ -121,8 +118,6 @@ const Navbar: React.FC<{ user: Member | null; cartCount: number; onLogout: () =>
     </div>
   </nav>
 );
-
-// --- App Content ---
 
 const AppContent: React.FC = () => {
   const [user, setUser] = useState<Member | null>(null);
@@ -249,7 +244,7 @@ const QuantityModal: React.FC<{ product: Product; onClose: () => void; onConfirm
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose}></div>
-      <div className="relative w-full max-w-sm bg-white rounded-[2.5rem] p-8 animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-sm bg-white rounded-[2.5rem] p-8 animate-in zoom-in-95 duration-200">
         <div className="text-center mb-6"><h3 className="text-xl font-black mb-2">選擇商品數量</h3><p className="text-orange-600 font-bold">{product['商品名稱']}</p><p className="text-slate-400 text-xs mt-1">目前庫存：{max}</p></div>
         <div className="flex items-center justify-center gap-4 mb-8">
           <button onClick={() => setVal(v => Math.max(1, parseInt(v)-1).toString())} className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center"><Minus className="w-6 h-6" /></button>
@@ -261,8 +256,6 @@ const QuantityModal: React.FC<{ product: Product; onClose: () => void; onConfirm
     </div>
   );
 };
-
-// --- Page Components ---
 
 const ShopPage: React.FC<{ onAddToCart: (p: Product) => void }> = ({ onAddToCart }) => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -344,11 +337,7 @@ const Register: React.FC = () => {
     setLoading(true);
     const res = await storageService.registerMember(data);
     if(res.success) { alert('註冊成功！歡迎加入爆紅姑娘。'); navigate('/login'); }
-    else {
-      if(res.message?.includes('電子郵件')) setErrs({ '會員帳號': res.message });
-      else if(res.message?.includes('手機號碼')) setErrs({ '手機號碼': res.message });
-      else alert(res.message);
-    }
+    else alert(res.message);
     setLoading(false);
   };
 
@@ -357,15 +346,10 @@ const Register: React.FC = () => {
       <h2 className="text-3xl font-black text-center mb-8">註冊新會員</h2>
       <form onSubmit={handle} className="space-y-6">
         <div><label className="block text-sm font-bold text-slate-700 mb-2 ml-2">真實姓名 *</label><input type="text" className="w-full px-6 py-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 font-bold" value={data['會員名稱']} onChange={e=>setData({...data, '會員名稱': e.target.value})} /></div>
-        <div><label className="block text-sm font-bold text-slate-700 mb-2 ml-2">Email 帳號 *</label><input type="email" className={`w-full px-6 py-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 font-bold ${errs['會員帳號']?'border-red-500':''}`} value={data['會員帳號']} onChange={e=>setData({...data, '會員帳號': e.target.value})} />{errs['會員帳號'] && <p className="text-red-500 text-xs font-bold mt-2 ml-2">{errs['會員帳號']}</p>}</div>
+        <div><label className="block text-sm font-bold text-slate-700 mb-2 ml-2">Email 帳號 *</label><input type="email" className="w-full px-6 py-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 font-bold" value={data['會員帳號']} onChange={e=>setData({...data, '會員帳號': e.target.value})} /></div>
         <div><label className="block text-sm font-bold text-slate-700 mb-2 ml-2">設定密碼 *</label><input type="password" placeholder="至少 4 位" className="w-full px-6 py-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 font-bold" value={data['會員密碼']} onChange={e=>setData({...data, '會員密碼': e.target.value})} /></div>
-        <div><label className="block text-sm font-bold text-slate-700 mb-2 ml-2">手機號碼 *</label><input type="tel" className={`w-full px-6 py-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 font-bold ${errs['手機號碼']?'border-red-500':''}`} value={data['手機號碼']} onChange={e=>setData({...data, '手機號碼': e.target.value})} placeholder="例: 0912345678" />{errs['手機號碼'] && <p className="text-red-500 text-xs font-bold mt-2 ml-2">{errs['手機號碼']}</p>}</div>
-        
-        <div>
-          <label className="block text-sm font-bold text-slate-700 mb-3 ml-2">出生年月 *</label>
-          <BirthdayInput value={data['生日'] || ''} onChange={val => setData({...data, '生日': val})} hasError={!!errs['生日']} />
-        </div>
-
+        <div><label className="block text-sm font-bold text-slate-700 mb-2 ml-2">手機號碼 *</label><input type="tel" className="w-full px-6 py-4 bg-slate-50 border rounded-2xl outline-none focus:ring-2 focus:ring-orange-500 font-bold" value={data['手機號碼']} onChange={e=>setData({...data, '手機號碼': e.target.value})} placeholder="例: 0912345678" /></div>
+        <div><label className="block text-sm font-bold text-slate-700 mb-3 ml-2">出生年月 *</label><BirthdayInput value={data['生日'] || ''} onChange={val => setData({...data, '生日': val})} /></div>
         <div>
           <label className="block text-sm font-bold text-slate-700 mb-2 ml-2">性別</label>
           <select className="w-full px-6 py-4 bg-slate-50 border rounded-2xl outline-none font-bold text-slate-600 focus:ring-2 focus:ring-orange-500" value={data['性別']} onChange={e=>setData({...data, '性別': e.target.value})}>
@@ -374,9 +358,7 @@ const Register: React.FC = () => {
             <option value="女">女</option>
           </select>
         </div>
-        
-        {errs.global && <p className="text-red-500 text-center text-sm font-bold">{errs.global}</p>}
-        <button disabled={loading} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-xl hover:bg-orange-600 active:scale-95 transition-all mt-4">{loading ? '註冊中...' : '確認註冊'}</button>
+        <button disabled={loading} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-xl hover:bg-orange-600 transition-all mt-4">{loading ? '註冊中...' : '確認註冊'}</button>
       </form>
     </div>
   );
@@ -392,7 +374,6 @@ const Profile: React.FC<{ user: Member | null; onUpdateUser: (m: Member) => void
   const [loadingSales, setLoadingSales] = useState(true);
 
   useEffect(() => {
-    // 同時抓取銷售紀錄與商品清單以利名稱對照
     const loadData = async () => {
       setLoadingSales(true);
       const [salesRes, prodRes] = await Promise.all([
@@ -407,7 +388,6 @@ const Profile: React.FC<{ user: Member | null; onUpdateUser: (m: Member) => void
   }, [user]);
 
   const handleSave = async () => {
-    if(!formData['生日']) return alert("出生年月為必填項");
     setLoading(true);
     const res = await storageService.updateMember(formData);
     if(res.success) { onUpdateUser(formData); setIsEditing(false); alert("資料更新成功！"); } else alert(res.message);
@@ -416,7 +396,7 @@ const Profile: React.FC<{ user: Member | null; onUpdateUser: (m: Member) => void
 
   const getProductName = (id: string) => {
     const p = products.find(item => String(item['商品id']) === String(id));
-    return p ? p['商品名稱'] : `未知商品 (ID: ${id})`;
+    return p ? p['商品名稱'] : `商品 ID: ${id}`;
   };
 
   return (
@@ -427,26 +407,17 @@ const Profile: React.FC<{ user: Member | null; onUpdateUser: (m: Member) => void
           <div className="flex-1 text-center md:text-left"><p className="text-orange-600 font-black text-xs uppercase tracking-widest mb-2">Member Profile</p><h1 className="text-5xl font-black text-slate-900 mb-2">{formData['會員名稱']}</h1><span className="bg-slate-100 px-4 py-1.5 rounded-full text-xs font-bold text-slate-500 border">ID: {formData['會員id']}</span></div>
           <button onClick={() => isEditing ? handleSave() : setIsEditing(true)} disabled={loading} className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-black transition-all ${isEditing ? 'bg-orange-600 text-white' : 'bg-slate-900 text-white'}`}>{loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Settings className="w-5 h-5" />}{isEditing ? '儲存變更' : '編輯資料'}</button>
         </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
           <div className="space-y-6">
             <div><label className="flex items-center gap-2 text-xs font-black text-slate-400 mb-2 uppercase tracking-widest"><UserCheck className="w-4 h-4" /> 會員名稱</label><input type="text" disabled={!isEditing} className="w-full px-6 py-4 bg-slate-50 border rounded-2xl font-bold outline-none focus:ring-2 focus:ring-orange-500" value={formData['會員名稱']} onChange={e=>setFormData({...formData, '會員名稱': e.target.value})} /></div>
             <div><label className="flex items-center gap-2 text-xs font-black text-slate-400 mb-2 uppercase tracking-widest"><Mail className="w-4 h-4" /> 電子郵件</label><input type="email" disabled={!isEditing} className="w-full px-6 py-4 bg-slate-50 border rounded-2xl font-bold outline-none focus:ring-2 focus:ring-orange-500" value={formData['會員帳號']} onChange={e=>setFormData({...formData, '會員帳號': e.target.value})} /></div>
-            <div><label className="flex items-center gap-2 text-xs font-black text-slate-400 mb-2 uppercase tracking-widest"><Lock className="w-4 h-4" /> 登入密碼</label><input type="password" disabled={!isEditing} placeholder={isEditing ? "輸入新密碼以更改" : "********"} className="w-full px-6 py-4 bg-slate-50 border rounded-2xl font-bold outline-none focus:ring-2 focus:ring-orange-500" onChange={e => e.target.value && setFormData({...formData, '會員密碼': e.target.value})} /></div>
           </div>
           <div className="space-y-6">
             <div><label className="flex items-center gap-2 text-xs font-black text-slate-400 mb-2 uppercase tracking-widest"><Phone className="w-4 h-4" /> 手機號碼</label><input type="tel" disabled={!isEditing} className="w-full px-6 py-4 bg-slate-50 border rounded-2xl font-bold outline-none focus:ring-2 focus:ring-orange-500" value={formatPhoneDisplay(formData['手機號碼'])} onChange={e=>setFormData({...formData, '手機號碼': e.target.value})} /></div>
-            
-            <div className="pt-2">
-              <label className="flex items-center gap-2 text-xs font-black text-slate-400 mb-3 uppercase tracking-widest">出生年月 *</label>
-              <BirthdayInput disabled={!isEditing} value={formData['生日'] || ''} onChange={val => setFormData({...formData, '生日': val})} />
-            </div>
-
-            <div><label className="flex items-center gap-2 text-xs font-black text-slate-400 mb-2 uppercase tracking-widest"><User className="w-4 h-4" /> 性別</label><select disabled={!isEditing} className="w-full px-6 py-4 bg-slate-50 border rounded-2xl font-bold outline-none focus:ring-2 focus:ring-orange-500" value={formData['性別']} onChange={e=>setFormData({...formData, '性別': e.target.value})}><option value="不便透露">不便透露</option><option value="男">男</option><option value="女">女</option></select></div>
+            <div className="pt-2"><label className="flex items-center gap-2 text-xs font-black text-slate-400 mb-3 uppercase tracking-widest">出生年月</label><BirthdayInput disabled={!isEditing} value={formData['生日'] || ''} onChange={val => setFormData({...formData, '生日': val})} /></div>
           </div>
         </div>
       </div>
-
       <div className="space-y-6">
         <h2 className="text-3xl font-black text-slate-900 flex items-center gap-3"><ShoppingBag className="w-8 h-8 text-orange-600" /> 我的購買紀錄</h2>
         {loadingSales ? <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-slate-300" /></div> : sales.length === 0 ? (
