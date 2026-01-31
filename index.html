@@ -7,6 +7,8 @@
     <title>爆紅姑娘 - 官方線上商城 | 健康與美學的最佳選擇</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- 引入 Babel Standalone 用於瀏覽器端轉譯 TSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
         body { font-family: 'Noto Sans TC', 'Inter', sans-serif; }
         #root:empty::before {
@@ -35,7 +37,10 @@
 </head>
 <body class="bg-slate-50 text-slate-900 overflow-x-hidden">
     <div id="root"></div>
-    <!-- 確保引用進入點 index.tsx -->
-    <script type="module" src="./index.tsx"></script>
+    
+    <!-- 使用 Babel 處理進入點，這能解決 GitHub Pages 的 .tsx MIME 錯誤 -->
+    <script type="text/babel" data-type="module" data-presets="react,typescript">
+        import "./index.tsx";
+    </script>
 </body>
 </html>

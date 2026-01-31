@@ -12,6 +12,12 @@ async function hashPassword(password: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+const parseSafeNumber = (val: any): number => {
+  if (typeof val === 'number') return val;
+  const s = String(val || '0').replace(/[^0-9.-]+/g, "");
+  return Number(s) || 0;
+};
+
 const normalizePhoneForStorage = (phone?: string | number): string => {
   if (!phone) return "";
   const s = String(phone).replace(/\D/g, '');
@@ -58,8 +64,8 @@ export const storageService = {
     if (res.success && res.data) {
         const cleaned = res.data.map(p => ({
             ...p,
-            '價格': Number(String(p['價格']).replace(/[^0-9.-]+/g, "") || 0),
-            '目前庫存': Number(String(p['目前庫存']).replace(/[^0-9.-]+/g, "") || 0)
+            '價格': parseSafeNumber(p['價格']),
+            '目前庫存': parseSafeNumber(p['目前庫存'])
         }));
         productsCache = cleaned;
         return { success: true, data: cleaned };
@@ -126,9 +132,9 @@ export const storageService = {
     if (res.success && res.data) {
       const cleaned = res.data.map(s => ({
         ...s,
-        '數量': Number(String(s['數量']).replace(/[^0-9.-]+/g, "") || 0),
-        '單價': Number(String(s['單價']).replace(/[^0-9.-]+/g, "") || 0),
-        '總計': Number(String(s['總計']).replace(/[^0-9.-]+/g, "") || 0)
+        '數量': parseSafeNumber(s['數量']),
+        '單價': parseSafeNumber(s['單價']),
+        '總計': parseSafeNumber(s['總計'])
       }));
       return { success: true, data: cleaned };
     }
