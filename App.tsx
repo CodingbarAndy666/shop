@@ -165,7 +165,16 @@ const AppContent: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar user={user} cartCount={cart.reduce((a, c) => a + c.quantity, 0)} onLogout={() => { if(confirm("確定登出？")) { setUser(null); setCart([]); navigate('/'); } }} onOpenCart={() => setIsCartOpen(true)} />
-      <main className="flex-1"><Routes><Route path="/" element={<ShopPage onAddToCart={addToCart} />} /><Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} /><Route path="/login" element={<Login onLogin={setUser} />} /><Route path="/register" element={<Register />} /><Route path="/profile" element={<Profile user={user} onUpdateUser={setUser} />} /></Routes></main>
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<ShopPage onAddToCart={addToCart} />} />
+          <Route path="/product/:id" element={<ProductDetail onAddToCart={addToCart} />} />
+          <Route path="/login" element={<Login onLogin={setUser} />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/profile" element={<Profile user={user} onUpdateUser={setUser} />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </main>
       
       {activeProduct && <QuantityModal product={activeProduct} onClose={() => setActiveProduct(null)} onConfirm={confirmAddToCart} />}
 
@@ -214,7 +223,7 @@ const AppContent: React.FC = () => {
               ) : (
                 <div className="flex gap-4">
                   <button onClick={() => setIsCheckoutView(false)} className="flex-1 bg-slate-100 text-slate-600 py-5 rounded-2xl font-black text-lg">返回修改</button>
-                  <button disabled={isProcessing} onClick={handleCheckout} className="flex-[2] bg-orange-600 text-white py-5 rounded-2xl font-black text-lg shadow-lg shadow-orange-100">{isProcessing ? '同步處理中...' : '確認下單'}</button>
+                  <button disabled={isProcessing} onClick={handleCheckout} className="flex-[2] bg-orange-600 text-white py-5 rounded-2xl font-black text-lg shadow-lg shadow-orange-100">{isProcessing ? '下單中...' : '確認完成訂購'}</button>
                 </div>
               )}
             </div>
@@ -227,18 +236,18 @@ const AppContent: React.FC = () => {
 
 const QuantityModal: React.FC<{ product: Product; onClose: () => void; onConfirm: (q: number) => void }> = ({ product, onClose, onConfirm }) => {
   const [val, setVal] = useState("1");
-  const max = product['目前庫存'];
+  const max = Number(product['目前庫存'] || 0);
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose}></div>
-      <div className="relative w-full max-w-sm bg-white rounded-[2.5rem] p-8 animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-sm bg-white rounded-[2.5rem] p-8 animate-in zoom-in-95 duration-200 shadow-2xl">
         <div className="text-center mb-6"><h3 className="text-xl font-black mb-2">選擇商品數量</h3><p className="text-orange-600 font-bold">{product['商品名稱']}</p><p className="text-slate-400 text-xs mt-1">目前庫存：{max}</p></div>
         <div className="flex items-center justify-center gap-4 mb-8">
-          <button onClick={() => setVal(v => Math.max(1, parseInt(v)-1).toString())} className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center"><Minus className="w-6 h-6" /></button>
+          <button onClick={() => setVal(v => Math.max(1, parseInt(v)-1).toString())} className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center hover:bg-slate-200"><Minus className="w-6 h-6" /></button>
           <input type="text" className="w-20 h-14 bg-slate-50 border-2 border-slate-100 rounded-2xl text-center text-2xl font-black" value={val} readOnly />
-          <button onClick={() => setVal(v => Math.min(max, parseInt(v)+1).toString())} className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center"><Plus className="w-6 h-6" /></button>
+          <button onClick={() => setVal(v => Math.min(max, parseInt(v)+1).toString())} className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center hover:bg-slate-200"><Plus className="w-6 h-6" /></button>
         </div>
-        <button onClick={() => onConfirm(parseInt(val))} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-lg">加入購物籃</button>
+        <button onClick={() => onConfirm(parseInt(val))} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-lg active:scale-95 transition-all">加入購物籃</button>
       </div>
     </div>
   );
@@ -255,8 +264,8 @@ const ShopPage: React.FC<{ onAddToCart: (p: Product) => void }> = ({ onAddToCart
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
         {products.map(p => (
           <div key={p['商品id']} className="group bg-white rounded-[2.5rem] overflow-hidden border hover:shadow-2xl transition-all flex flex-col transform hover:-translate-y-1">
-            <Link to={`/product/${p['商品id']}`} className="aspect-square bg-slate-100 overflow-hidden relative"><img src={formatImageUrl(p['圖片連結'])} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" alt={p['商品名稱']} />{p['目前庫存'] <= 0 && <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center"><span className="bg-slate-900 text-white px-6 py-2 rounded-full font-black text-sm">暫時售完</span></div>}</Link>
-            <div className="p-8 flex flex-col flex-1"><h3 className="text-xl font-black text-slate-900 mb-2 truncate group-hover:text-orange-600">{p['商品名稱']}</h3><p className="text-slate-400 text-xs mb-6 line-clamp-2 h-8">{p['簡單介紹']}</p><div className="flex items-center justify-between mt-auto"><span className="text-2xl font-black text-slate-900">NT$ {p['價格'].toLocaleString()}</span><button disabled={p['目前庫存'] <= 0} onClick={() => onAddToCart(p)} className="bg-slate-900 text-white p-4 rounded-2xl hover:bg-orange-600 disabled:bg-slate-100"><ShoppingCart className="w-5 h-5" /></button></div></div>
+            <Link to={`/product/${p['商品id']}`} className="aspect-square bg-slate-100 overflow-hidden relative"><img src={formatImageUrl(p['圖片連結'])} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" alt={p['商品名稱']} />{Number(p['目前庫存']) <= 0 && <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center"><span className="bg-slate-900 text-white px-6 py-2 rounded-full font-black text-sm">暫時售完</span></div>}</Link>
+            <div className="p-8 flex flex-col flex-1"><h3 className="text-xl font-black text-slate-900 mb-2 truncate group-hover:text-orange-600">{p['商品名稱']}</h3><p className="text-slate-400 text-xs mb-6 line-clamp-2 h-8">{p['簡單介紹']}</p><div className="flex items-center justify-between mt-auto"><span className="text-2xl font-black text-slate-900">NT$ {Number(p['價格']).toLocaleString()}</span><button disabled={Number(p['目前庫存']) <= 0} onClick={() => onAddToCart(p)} className="bg-slate-900 text-white p-4 rounded-2xl hover:bg-orange-600 disabled:bg-slate-100 transition-colors"><ShoppingCart className="w-5 h-5" /></button></div></div>
           </div>
         ))}
       </div>
@@ -276,10 +285,10 @@ const ProductDetail: React.FC<{ onAddToCart: (p: Product) => void }> = ({ onAddT
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 bg-white rounded-[3rem] p-10 shadow-xl border">
         <div className="rounded-[2rem] aspect-square overflow-hidden bg-slate-50 border"><img src={formatImageUrl(product['圖片連結'])} className="w-full h-full object-cover" alt={product['商品名稱']} /></div>
         <div className="flex flex-col py-4">
-          <span className="text-orange-600 font-bold mb-2">{product['商品類型']}</span><h1 className="text-4xl font-black text-slate-900 mb-4">{product['商品名稱']}</h1><p className="text-3xl font-black text-orange-600 mb-8">NT$ {product['價格'].toLocaleString()}</p>
+          <span className="text-orange-600 font-bold mb-2">{product['商品類型']}</span><h1 className="text-4xl font-black text-slate-900 mb-4">{product['商品名稱']}</h1><p className="text-3xl font-black text-orange-600 mb-8">NT$ {Number(product['價格']).toLocaleString()}</p>
           <div className="bg-slate-50 p-6 rounded-2xl mb-8 border leading-relaxed text-slate-600">{product['簡單介紹']}</div>
           <div className="mb-10 text-slate-500 text-sm leading-relaxed whitespace-pre-wrap">{product['詳細介紹']}</div>
-          <div className="mt-auto pt-6 border-t"><div className="flex justify-between items-center mb-6"><span className="text-slate-400 text-xs font-bold">目前剩餘</span><span className={product['目前庫存'] > 0 ? 'text-green-500 font-bold' : 'text-red-500 font-bold'}>{product['目前庫存'] > 0 ? `${product['目前庫存']} 件` : '缺貨中'}</span></div><button disabled={product['目前庫存'] <= 0} onClick={() => onAddToCart(product)} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-xl hover:bg-orange-600 disabled:bg-slate-200 transition-all">加入購物籃</button></div>
+          <div className="mt-auto pt-6 border-t"><div className="flex justify-between items-center mb-6"><span className="text-slate-400 text-xs font-bold">目前剩餘</span><span className={Number(product['目前庫存']) > 0 ? 'text-green-500 font-bold' : 'text-red-500 font-bold'}>{Number(product['目前庫存']) > 0 ? `${product['目前庫存']} 件` : '缺貨中'}</span></div><button disabled={Number(product['目前庫存']) <= 0} onClick={() => onAddToCart(product)} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-xl hover:bg-orange-600 disabled:bg-slate-200 transition-all">加入購物籃</button></div>
         </div>
       </div>
     </div>
@@ -340,7 +349,7 @@ const Register: React.FC = () => {
             <option value="女">女</option>
           </select>
         </div>
-        <button disabled={loading} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-xl hover:bg-orange-600 transition-all mt-4">{loading ? '註冊中...' : '確認註冊'}</button>
+        <button disabled={loading} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-xl hover:bg-orange-600 active:scale-95 transition-all mt-4">{loading ? '註冊中...' : '確認註冊'}</button>
       </form>
     </div>
   );
@@ -358,6 +367,7 @@ const Profile: React.FC<{ user: Member | null; onUpdateUser: (m: Member) => void
   useEffect(() => {
     const loadData = async () => {
       setLoadingSales(true);
+      // 同時讀取銷售與商品資料以利名稱比對
       const [salesRes, prodRes] = await Promise.all([
         storageService.getMemberSales(user['會員id']),
         storageService.getProducts()
@@ -402,14 +412,22 @@ const Profile: React.FC<{ user: Member | null; onUpdateUser: (m: Member) => void
       </div>
       <div className="space-y-6">
         <h2 className="text-3xl font-black text-slate-900 flex items-center gap-3"><ShoppingBag className="w-8 h-8 text-orange-600" /> 我的購買紀錄</h2>
-        {loadingSales ? <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-slate-300" /></div> : sales.length === 0 ? (
+        {loadingSales ? (
+          <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-slate-300" /></div>
+        ) : sales.length === 0 ? (
           <div className="bg-white rounded-[2.5rem] p-20 text-center border border-slate-100"><Package className="w-16 h-16 text-slate-100 mx-auto mb-6" /><p className="text-slate-400 font-bold uppercase tracking-widest text-sm">尚無任何訂購紀錄</p></div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {sales.map((sale, idx) => (
-              <div key={idx} className="bg-white rounded-3xl p-6 border shadow-sm flex flex-col gap-4 relative animate-in fade-in zoom-in-95 group hover:border-orange-200 transition-all">
+              <div key={idx} className="bg-white rounded-3xl p-6 border shadow-sm flex flex-col gap-4 relative animate-in fade-in zoom-in-95 group hover:border-orange-200 transition-all hover:shadow-lg">
                 <div className="flex justify-between items-start">
-                  <div><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{new Date(sale['售出日期']).toLocaleDateString()} {new Date(sale['售出日期']).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p><h4 className="font-black text-slate-800 text-lg">訂單編號 #{String(idx+1).padStart(4, '0')}</h4></div>
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                      {sale['售出日期'] ? new Date(sale['售出日期']).toLocaleDateString() : '日期不詳'} 
+                      {sale['售出日期'] ? new Date(sale['售出日期']).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}
+                    </p>
+                    <h4 className="font-black text-slate-800 text-lg">訂單編號 #{String(idx+1).padStart(4, '0')}</h4>
+                  </div>
                   <span className="bg-green-50 text-green-600 px-3 py-1 rounded-full text-xs font-bold border border-green-100">交易完成</span>
                 </div>
                 <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-2xl">
@@ -425,7 +443,7 @@ const Profile: React.FC<{ user: Member | null; onUpdateUser: (m: Member) => void
                 </div>
                 <div className="flex items-start gap-2 text-[10px] text-slate-400 bg-slate-50/50 p-2 rounded-xl">
                    <MapPin className="w-3 h-3 shrink-0 mt-0.5" />
-                   <p className="line-clamp-1">收件地址：{sale['地址']}</p>
+                   <p className="line-clamp-1">收件地址：{sale['地址'] || '未提供地址'}</p>
                 </div>
               </div>
             ))}

@@ -54,12 +54,13 @@ async function fetchFromSheet<T>(params: Record<string, string>, method: 'GET' |
 
 export const storageService = {
   async getProducts(): Promise<ServiceResult<Product[]>> {
+    // 每次嘗試獲取最新，不完全依賴快取以確保庫存準確
     const res = await fetchFromSheet<Product[]>({ action: 'getProducts' });
     if (res.success && res.data) {
         const cleaned = res.data.map(p => ({
             ...p,
-            '價格': Number(p['價格'] || 0),
-            '目前庫存': Number(p['目前庫存'] || 0)
+            '價格': Number(String(p['價格']).replace(/[^0-9.-]+/g, "") || 0),
+            '目前庫存': Number(String(p['目前庫存']).replace(/[^0-9.-]+/g, "") || 0)
         }));
         productsCache = cleaned;
         return { success: true, data: cleaned };
@@ -128,9 +129,9 @@ export const storageService = {
     if (res.success && res.data) {
       const cleaned = res.data.map(s => ({
         ...s,
-        '數量': Number(s['數量'] || 0),
-        '單價': Number(s['單價'] || 0),
-        '總計': Number(s['總計'] || 0)
+        '數量': Number(String(s['數量']).replace(/[^0-9.-]+/g, "") || 0),
+        '單價': Number(String(s['單價']).replace(/[^0-9.-]+/g, "") || 0),
+        '總計': Number(String(s['總計']).replace(/[^0-9.-]+/g, "") || 0)
       }));
       return { success: true, data: cleaned };
     }
