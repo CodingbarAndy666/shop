@@ -1,6 +1,6 @@
 
-import { Product, Member, SaleRecord, ServiceResult, CheckoutData } from '../types';
-import { GOOGLE_SHEET_API_URL } from '../constants';
+import { Product, Member, SaleRecord, ServiceResult, CheckoutData } from '../types.ts';
+import { GOOGLE_SHEET_API_URL } from '../constants.tsx';
 
 let productsCache: Product[] | null = null;
 
@@ -37,13 +37,13 @@ async function fetchFromSheet<T>(params: Record<string, string>, method: 'GET' |
     }
 
     const response = await fetch(url.toString(), options);
-    if (!response.ok) throw new Error(`伺服器回應錯誤: ${response.status}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     
     const text = await response.text();
     try {
       return JSON.parse(text) as ServiceResult<T>;
     } catch (e) {
-      console.error("JSON 解析失敗，原始文字:", text);
+      console.error("JSON 解析失敗:", text);
       return { success: false, message: "資料格式錯誤" };
     }
   } catch (error) {
@@ -54,7 +54,6 @@ async function fetchFromSheet<T>(params: Record<string, string>, method: 'GET' |
 
 export const storageService = {
   async getProducts(): Promise<ServiceResult<Product[]>> {
-    // 每次嘗試獲取最新，不完全依賴快取以確保庫存準確
     const res = await fetchFromSheet<Product[]>({ action: 'getProducts' });
     if (res.success && res.data) {
         const cleaned = res.data.map(p => ({
@@ -116,9 +115,7 @@ export const storageService = {
         '電話': normalizePhoneForStorage(checkoutData.shippingInfo.phone),
         '地址': checkoutData.shippingInfo.address
       }));
-      const res = await fetchFromSheet<null>({ action: 'processCheckout' }, 'POST', { saleRecords });
-      if (res.success) productsCache = null; 
-      return res;
+      return await fetchFromSheet<null>({ action: 'processCheckout' }, 'POST', { saleRecords });
     } catch (e) {
       return { success: false, message: "結帳異常" };
     }
