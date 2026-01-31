@@ -58,8 +58,8 @@ export const storageService = {
     if (res.success && res.data) {
         const cleaned = res.data.map(p => ({
             ...p,
-            '價格': Number(p['價格']),
-            '目前庫存': Number(p['目前庫存'])
+            '價格': Number(p['價格'] || 0),
+            '目前庫存': Number(p['目前庫存'] || 0)
         }));
         productsCache = cleaned;
         return { success: true, data: cleaned };
@@ -124,6 +124,16 @@ export const storageService = {
   },
 
   async getMemberSales(memberId: string): Promise<ServiceResult<SaleRecord[]>> {
-    return await fetchFromSheet<SaleRecord[]>({ action: 'getMemberSales', memberId });
+    const res = await fetchFromSheet<SaleRecord[]>({ action: 'getMemberSales', memberId });
+    if (res.success && res.data) {
+      const cleaned = res.data.map(s => ({
+        ...s,
+        '數量': Number(s['數量'] || 0),
+        '單價': Number(s['單價'] || 0),
+        '總計': Number(s['總計'] || 0)
+      }));
+      return { success: true, data: cleaned };
+    }
+    return res;
   }
 };

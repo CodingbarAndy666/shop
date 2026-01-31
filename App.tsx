@@ -27,9 +27,6 @@ const formatImageUrl = (url?: string) => {
   return url;
 };
 
-/**
- * 核心格式化函數：確保手機號碼為字串，且以 0 開頭
- */
 const formatPhoneDisplay = (p?: any) => {
   if (p === undefined || p === null || p === "") return "";
   const s = String(p).replace(/\D/g, '');
@@ -46,23 +43,17 @@ const BirthdayInput: React.FC<{
   hasError?: boolean;
 }> = ({ value, onChange, disabled, hasError }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-
   const handleContainerClick = () => {
     if (disabled) return;
     if (inputRef.current) {
       if (typeof (inputRef.current as any).showPicker === 'function') {
-        try {
-          (inputRef.current as any).showPicker();
-        } catch (e) {
-          inputRef.current.focus();
-        }
+        try { (inputRef.current as any).showPicker(); } catch (e) { inputRef.current.focus(); }
       } else {
         inputRef.current.focus();
         inputRef.current.click();
       }
     }
   };
-
   return (
     <div className={`relative cursor-pointer w-full`} onClick={handleContainerClick}>
       <input 
@@ -153,14 +144,12 @@ const AppContent: React.FC = () => {
   const handleCheckout = async () => {
     if (!user) return navigate('/login');
     if (!shippingInfo.name || !shippingInfo.phone || !shippingInfo.address) return alert("請填寫完整的收件資訊");
-    
     setIsProcessing(true);
     const res = await storageService.processCheckout({
       memberId: user['會員id'],
       items: cart,
       shippingInfo
     });
-
     if (res.success) {
       alert("下單成功！感謝您的支持，我們將盡快為您出貨。");
       setCart([]);
@@ -188,7 +177,6 @@ const AppContent: React.FC = () => {
               <h2 className="text-3xl font-black text-slate-900 flex items-center gap-3"><ShoppingCart className="w-8 h-8 text-orange-600" /> {isCheckoutView ? '填寫出貨資訊' : '購物籃'}</h2>
               <button onClick={() => { setIsCartOpen(false); setIsCheckoutView(false); }} className="p-3 hover:bg-slate-100 rounded-2xl"><X className="w-6 h-6 text-slate-400" /></button>
             </div>
-            
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               {!isCheckoutView ? (
                 cart.length === 0 ? (
@@ -219,7 +207,6 @@ const AppContent: React.FC = () => {
                 </div>
               )}
             </div>
-
             <div className="p-8 border-t bg-white">
               <div className="flex justify-between items-end mb-8"><div className="flex flex-col"><span className="text-xs font-black text-slate-400 uppercase">結帳總額</span><span className="text-4xl font-black text-orange-600">NT$ {cart.reduce((acc, c) => acc + (c.product['價格'] * c.quantity), 0).toLocaleString()}</span></div></div>
               {!isCheckoutView ? (
@@ -244,7 +231,7 @@ const QuantityModal: React.FC<{ product: Product; onClose: () => void; onConfirm
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose}></div>
-      <div className="relative w-full max-sm bg-white rounded-[2.5rem] p-8 animate-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-sm bg-white rounded-[2.5rem] p-8 animate-in zoom-in-95 duration-200">
         <div className="text-center mb-6"><h3 className="text-xl font-black mb-2">選擇商品數量</h3><p className="text-orange-600 font-bold">{product['商品名稱']}</p><p className="text-slate-400 text-xs mt-1">目前庫存：{max}</p></div>
         <div className="flex items-center justify-center gap-4 mb-8">
           <button onClick={() => setVal(v => Math.max(1, parseInt(v)-1).toString())} className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center"><Minus className="w-6 h-6" /></button>
@@ -325,22 +312,17 @@ const Login: React.FC<{ onLogin: (m: Member) => void }> = ({ onLogin }) => {
 
 const Register: React.FC = () => {
   const [data, setData] = useState<Partial<Member>>({'會員名稱': '', '會員帳號': '', '會員密碼': '', '手機號碼': '', '性別': '不便透露', '生日': ''});
-  const [errs, setErrs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
   const handle = async (e: React.FormEvent) => {
-    e.preventDefault(); setErrs({});
-    if(!data['會員名稱'] || !data['會員帳號']?.includes('@') || !data['生日']) {
-      return setErrs({ global: "請填寫完整資訊，出生年月為必填項目" });
-    }
+    e.preventDefault();
+    if(!data['會員名稱'] || !data['會員帳號']?.includes('@') || !data['生日']) { alert("請填寫完整資訊，出生年月為必填項目"); return; }
     setLoading(true);
     const res = await storageService.registerMember(data);
     if(res.success) { alert('註冊成功！歡迎加入爆紅姑娘。'); navigate('/login'); }
     else alert(res.message);
     setLoading(false);
   };
-
   return (
     <div className="max-w-md mx-auto mt-12 p-10 bg-white rounded-[3rem] shadow-2xl border mb-20">
       <h2 className="text-3xl font-black text-center mb-8">註冊新會員</h2>
@@ -434,7 +416,7 @@ const Profile: React.FC<{ user: Member | null; onUpdateUser: (m: Member) => void
                    <div className="flex-1 min-w-0">
                       <p className="text-xs font-bold text-slate-400 uppercase mb-1">購買品項</p>
                       <p className="font-black text-slate-900 truncate text-base">{getProductName(sale['商品id'])}</p>
-                      <p className="text-xs font-bold text-slate-500 mt-1">數量: {sale['數量']} 件</p>
+                      <p className="text-xs font-bold text-slate-500 mt-1">數量: {Number(sale['數量'] || 0)} 件</p>
                    </div>
                    <div className="text-right shrink-0">
                       <p className="text-xs font-bold text-slate-400 uppercase mb-1">訂單總額</p>
